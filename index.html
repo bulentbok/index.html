@@ -3,53 +3,98 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Benim Sitem</title>
+<title>Benim Modern Sitem</title>
 <style>
+  /* Genel stil */
   body {
     font-family: 'Arial', sans-serif;
-    background: linear-gradient(135deg, #ff9a9e, #fad0c4);
     margin: 0;
     padding: 0;
-    text-align: center;
-    color: #fff;
+    background: #f0f2f5;
+    color: #333;
   }
   header {
-    background-color: rgba(0,0,0,0.3);
+    background: #4CAF50;
+    color: white;
     padding: 50px 20px;
+    text-align: center;
   }
-  h1 {
-    font-size: 3em;
+  header h1 {
     margin: 0;
+    font-size: 3em;
   }
-  p {
-    font-size: 1.5em;
-    margin-top: 10px;
+  nav {
+    background: #333;
+    display: flex;
+    justify-content: center;
+  }
+  nav a {
+    color: white;
+    padding: 15px 20px;
+    text-decoration: none;
+    display: block;
+  }
+  nav a:hover {
+    background: #575757;
   }
   main {
-    margin: 40px 20px;
+    padding: 40px 20px;
+    max-width: 800px;
+    margin: auto;
   }
-  a {
-    color: #fff;
-    text-decoration: none;
-    font-weight: bold;
-    background: rgba(0,0,0,0.3);
-    padding: 10px 20px;
-    border-radius: 10px;
-    transition: 0.3s;
+  section {
+    margin-bottom: 50px;
   }
-  a:hover {
-    background: rgba(0,0,0,0.5);
+  h2 {
+    color: #4CAF50;
+  }
+  footer {
+    background: #333;
+    color: white;
+    text-align: center;
+    padding: 20px;
+  }
+
+  /* Responsive */
+  @media(max-width:600px){
+    header h1 { font-size: 2em; }
+    nav { flex-direction: column; }
   }
 </style>
 </head>
 <body>
+
 <header>
-  <h1>Merhaba! 🎉</h1>
-  <p>GitHub Pages ile yaptığım ilk site</p>
+  <h1>Benim Modern Sitem</h1>
+  <p>GitHub Pages ile yaptığım gelişmiş site</p>
 </header>
+
+<nav>
+  <a href="#hakkimda">Hakkımda</a>
+  <a href="#projeler">Projeler</a>
+  <a href="#iletisim">İletişim</a>
+</nav>
+
 <main>
-  <p>Buraya kendi içeriklerini ekleyebilirsin.</p>
-  <a href="#">Daha fazla bilgi</a>
+  <section id="hakkimda">
+    <h2>Hakkımda</h2>
+    <p>Buraya kendini tanıtan kısa bir yazı ekleyebilirsin. Örneğin hobilerin, yaptığın işler veya ilgilendiğin konular.</p>
+  </section>
+
+  <section id="projeler">
+    <h2>Projeler</h2>
+    <p>Buraya projelerini veya çalışmalarını gösterebilirsin. Resim, link veya açıklamalar ekleyebilirsin.</p>
+  </section>
+
+  <section id="iletisim">
+    <h2>İletişim</h2>
+    <p>Buraya e-posta, sosyal medya veya iletişim bilgilerini ekleyebilirsin.</p>
+  </section>
 </main>
+
+<footer>
+  &copy; 2025 Benim Modern Sitem
+</footer>
+
 </body>
 </html>
