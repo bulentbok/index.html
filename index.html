@@ -5,21 +5,76 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Başlıklı Not Defteri</title>
   <style>
-    body{max-width:900px;margin:30px auto;padding:20px;font-family:system-ui,sans-serif;display:grid;grid-template-columns:250px 1fr;gap:16px}
+    :root {
+      --bg:#f9f9f9;
+      --fg:#111;
+      --panel:#ffffff;
+      --accent:#2c3e50;
+    }
+    body.dark {
+      --bg:#1e1e1e;
+      --fg:#f0f0f0;
+      --panel:#2b2b2b;
+      --accent:#8ab4f8;
+    }
+    body{
+      background:var(--bg);
+      color:var(--fg);
+      max-width:1000px;
+      margin:30px auto;
+      padding:20px;
+      font-family:system-ui,sans-serif;
+      display:grid;
+      grid-template-columns:260px 1fr;
+      gap:16px;
+      transition:background 0.3s,color 0.3s;
+    }
     h1{grid-column:1/3;text-align:center;margin-bottom:10px}
-    .sidebar{border:1px solid #ddd;padding:10px;border-radius:8px;background:#fafafa;display:flex;flex-direction:column;gap:6px;overflow-y:auto;max-height:80vh}
-    .note-btn{padding:6px;border-radius:6px;border:1px solid #ccc;cursor:pointer;background:#fff;text-align:left}
-    .note-btn.active{background:#e6ebff;border-color:#b3c7ff}
-    .editor{display:flex;flex-direction:column;gap:8px}
-    input[type=text]{padding:6px;border:1px solid #ccc;border-radius:6px}
-    textarea{width:100%;min-height:300px;padding:8px;border-radius:6px;border:1px solid #ccc;font-size:15px;resize:vertical}
-    .controls{display:flex;gap:8px}
-    button{padding:6px 10px;border:1px solid #ccc;border-radius:6px;background:#fafafa;cursor:pointer}
-    .status{font-size:13px;color:#666;text-align:right}
+    .sidebar{
+      border:1px solid #ddd;
+      background:var(--panel);
+      padding:10px;
+      border-radius:12px;
+      display:flex;flex-direction:column;gap:6px;
+      overflow-y:auto;max-height:80vh;
+      box-shadow:0 2px 6px rgba(0,0,0,0.05);
+      transition:background 0.3s,border-color 0.3s;
+    }
+    .note-btn{
+      padding:8px 10px;
+      border-radius:8px;
+      border:none;
+      cursor:pointer;
+      background:none;
+      text-align:left;
+      transition:background 0.2s;
+      color:var(--fg);
+    }
+    .note-btn:hover{background:rgba(0,0,0,0.05)}
+    .note-btn.active{background:var(--accent);color:white}
+    .editor{
+      background:var(--panel);
+      border:1px solid #ddd;
+      border-radius:12px;
+      padding:16px;
+      display:flex;flex-direction:column;gap:10px;
+      box-shadow:0 2px 6px rgba(0,0,0,0.05);
+      transition:background 0.3s,border-color 0.3s;
+    }
+    input[type=text]{padding:8px;border:1px solid #ccc;border-radius:8px;background:var(--bg);color:var(--fg);}
+    textarea{width:100%;min-height:300px;padding:10px;border-radius:8px;border:1px solid #ccc;font-size:15px;resize:vertical;background:var(--bg);color:var(--fg);}
+    .controls{display:flex;gap:8px;align-items:center;justify-content:space-between}
+    button{padding:6px 12px;border:1px solid #ccc;border-radius:8px;background:var(--panel);cursor:pointer;color:var(--fg);}
+    button:hover{background:rgba(0,0,0,0.05)}
+    .status{font-size:13px;color:#666;text-align:right;flex-grow:1}
+    .topbar{grid-column:1/3;display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
   </style>
 </head>
 <body>
-  <h1>Başlıklı Not Defteri</h1>
+  <div class="topbar">
+    <h1>Başlıklı Not Defteri</h1>
+    <button id="toggleTheme">🌙</button>
+  </div>
 
   <div class="sidebar">
     <button id="newBtn">+ Yeni Not</button>
@@ -30,8 +85,10 @@
     <input id="title" type="text" placeholder="Not başlığı" />
     <textarea id="body" placeholder="Not içeriği..."></textarea>
     <div class="controls">
-      <button id="saveBtn">Kaydet</button>
-      <button id="deleteBtn" style="background:#fff6f6;border-color:#f3c6c6">Sil</button>
+      <div>
+        <button id="saveBtn">Kaydet</button>
+        <button id="deleteBtn" style="background:#fff6f6;border-color:#f3c6c6">Sil</button>
+      </div>
       <div class="status" id="status">Kaydedildi ✔</div>
     </div>
   </div>
@@ -44,6 +101,7 @@
     const newBtn=document.getElementById('newBtn');
     const deleteBtn=document.getElementById('deleteBtn');
     const status=document.getElementById('status');
+    const toggleTheme=document.getElementById('toggleTheme');
 
     let notes=JSON.parse(localStorage.getItem('titledNotes')||'[]');
     let activeId=null;
@@ -111,8 +169,14 @@
     title.addEventListener('input',()=>{status.textContent='Kaydediliyor...';});
     body.addEventListener('input',()=>{status.textContent='Kaydediliyor...';});
 
-    // Otomatik kaydetme
     setInterval(()=>{if(activeId) saveActive();},1000);
+
+    // Tema geçişi
+    if(localStorage.getItem('theme')==='dark') document.body.classList.add('dark');
+    toggleTheme.onclick=()=>{
+      document.body.classList.toggle('dark');
+      localStorage.setItem('theme',document.body.classList.contains('dark')?'dark':'light');
+    };
 
     renderList();
     if(notes.length>0) openNote(notes[0].id);
