@@ -3,49 +3,119 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Online Not Defteri</title>
+  <title>Başlıklı Not Defteri</title>
   <style>
-    body{max-width:760px;margin:30px auto;padding:20px;font-family:system-ui,sans-serif;line-height:1.5;color:#111}
-    h1{font-size:26px;margin-bottom:12px;text-align:center}
-    textarea{width:100%;min-height:400px;padding:12px;border-radius:6px;border:1px solid #ccc;font-size:15px;box-sizing:border-box;resize:vertical}
-    .status{margin-top:6px;color:#666;font-size:13px;text-align:right}
-    .clear-btn{margin-top:10px;display:block;background:#fff6f6;border:1px solid #f3cccc;padding:6px 10px;border-radius:6px;cursor:pointer}
+    body{max-width:900px;margin:30px auto;padding:20px;font-family:system-ui,sans-serif;display:grid;grid-template-columns:250px 1fr;gap:16px}
+    h1{grid-column:1/3;text-align:center;margin-bottom:10px}
+    .sidebar{border:1px solid #ddd;padding:10px;border-radius:8px;background:#fafafa;display:flex;flex-direction:column;gap:6px;overflow-y:auto;max-height:80vh}
+    .note-btn{padding:6px;border-radius:6px;border:1px solid #ccc;cursor:pointer;background:#fff;text-align:left}
+    .note-btn.active{background:#e6ebff;border-color:#b3c7ff}
+    .editor{display:flex;flex-direction:column;gap:8px}
+    input[type=text]{padding:6px;border:1px solid #ccc;border-radius:6px}
+    textarea{width:100%;min-height:300px;padding:8px;border-radius:6px;border:1px solid #ccc;font-size:15px;resize:vertical}
+    .controls{display:flex;gap:8px}
+    button{padding:6px 10px;border:1px solid #ccc;border-radius:6px;background:#fafafa;cursor:pointer}
+    .status{font-size:13px;color:#666;text-align:right}
   </style>
 </head>
 <body>
-  <h1>Online Not Defteri</h1>
-  <textarea id="notes" placeholder="Buraya yazmaya başla... (otomatik kaydedilir)"></textarea>
-  <div class="status" id="status">Kaydedildi ✔</div>
-  <button class="clear-btn" id="clearBtn">Notu Temizle</button>
+  <h1>Başlıklı Not Defteri</h1>
+
+  <div class="sidebar">
+    <button id="newBtn">+ Yeni Not</button>
+    <div id="notesList"></div>
+  </div>
+
+  <div class="editor">
+    <input id="title" type="text" placeholder="Not başlığı" />
+    <textarea id="body" placeholder="Not içeriği..."></textarea>
+    <div class="controls">
+      <button id="saveBtn">Kaydet</button>
+      <button id="deleteBtn" style="background:#fff6f6;border-color:#f3c6c6">Sil</button>
+      <div class="status" id="status">Kaydedildi ✔</div>
+    </div>
+  </div>
 
   <script>
-    const textarea=document.getElementById('notes');
+    const notesList=document.getElementById('notesList');
+    const title=document.getElementById('title');
+    const body=document.getElementById('body');
+    const saveBtn=document.getElementById('saveBtn');
+    const newBtn=document.getElementById('newBtn');
+    const deleteBtn=document.getElementById('deleteBtn');
     const status=document.getElementById('status');
-    const clearBtn=document.getElementById('clearBtn');
 
-    // Sayfa açıldığında kaydedilmiş notu yükle
-    textarea.value=localStorage.getItem('myNotes')||'';
+    let notes=JSON.parse(localStorage.getItem('titledNotes')||'[]');
+    let activeId=null;
 
-    let timeout;
-    textarea.addEventListener('input',()=>{
-      localStorage.setItem('myNotes',textarea.value);
-      status.textContent='Kaydediliyor...';
-      clearTimeout(timeout);
-      timeout=setTimeout(()=>{
-        status.textContent='Kaydedildi ✔';
-      },500);
-    });
+    function renderList(){
+      notesList.innerHTML='';
+      notes.forEach(n=>{
+        const btn=document.createElement('button');
+        btn.className='note-btn'+(n.id===activeId?' active':'');
+        btn.textContent=n.title||'(Başlıksız)';
+        btn.onclick=()=>openNote(n.id);
+        notesList.appendChild(btn);
+      });
+    }
 
-    clearBtn.addEventListener('click',()=>{
-      if(confirm('Notu silmek istediğine emin misin?')){
-        textarea.value='';
-        localStorage.removeItem('myNotes');
-        status.textContent='Not temizlendi';
+    function saveNotes(){
+      localStorage.setItem('titledNotes',JSON.stringify(notes));
+    }
+
+    function openNote(id){
+      const n=notes.find(x=>x.id===id);
+      if(!n) return;
+      activeId=id;
+      title.value=n.title;
+      body.value=n.body;
+      renderList();
+    }
+
+    function saveActive(){
+      if(!activeId) return;
+      const n=notes.find(x=>x.id===activeId);
+      n.title=title.value.trim();
+      n.body=body.value;
+      saveNotes();
+      renderList();
+      status.textContent='Kaydedildi ✔';
+    }
+
+    function newNote(){
+      const id=Date.now().toString();
+      const n={id,title:'',body:''};
+      notes.unshift(n);
+      activeId=id;
+      saveNotes();
+      renderList();
+      openNote(id);
+    }
+
+    function deleteActive(){
+      if(!activeId) return;
+      if(confirm('Bu notu silmek istiyor musun?')){
+        notes=notes.filter(n=>n.id!==activeId);
+        activeId=null;
+        title.value='';
+        body.value='';
+        saveNotes();
+        renderList();
       }
-    });
+    }
 
-    // Klavye kısayollarını tamamen devre dışı bırakıyoruz (S veya N yakalanmayacak)
-    document.onkeydown = null;
+    saveBtn.onclick=saveActive;
+    newBtn.onclick=newNote;
+    deleteBtn.onclick=deleteActive;
+
+    title.addEventListener('input',()=>{status.textContent='Kaydediliyor...';});
+    body.addEventListener('input',()=>{status.textContent='Kaydediliyor...';});
+
+    // Otomatik kaydetme
+    setInterval(()=>{if(activeId) saveActive();},1000);
+
+    renderList();
+    if(notes.length>0) openNote(notes[0].id);
   </script>
 </body>
 </html>
