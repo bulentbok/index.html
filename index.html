@@ -3,144 +3,204 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Hagakure — Beğendiklerim</title>
+  <title>Basit Not Defteri — Kalıcı</title>
   <style>
-    :root{font-family:Inter,system-ui,Segoe UI,Roboto,"Helvetica Neue",Arial;margin:0}
-    body{max-width:980px;margin:30px auto;padding:20px;line-height:1.45;color:#111}
-    h1{font-size:28px;margin-bottom:6px}
-    p.lead{color:#444;margin-top:0}
-    .controls{display:flex;gap:8px;flex-wrap:wrap;margin:18px 0}
-    input[type=file]{display:block}
-    .entries{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:18px}
-    .card{border:1px solid #e6e6e6;padding:12px;border-radius:8px;background:#fff;box-shadow:0 2px 6px rgba(0,0,0,0.03)}
-    .card img{width:100%;height:200px;object-fit:cover;border-radius:6px}
-    .caption{margin-top:8px;white-space:pre-wrap}
-    .actions{display:flex;gap:8px;margin-top:10px}
+    :root{font-family:Inter,system-ui,Segoe UI,Roboto,Arial;margin:0}
+    body{max-width:980px;margin:20px auto;padding:18px;color:#111}
+    header{display:flex;align-items:center;gap:12px}
+    h1{font-size:20px;margin:0}
+    .controls{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
     button{padding:8px 10px;border-radius:6px;border:1px solid #ccc;background:#fafafa;cursor:pointer}
-    textarea{width:100%;min-height:110px;padding:8px;border-radius:6px;border:1px solid #ddd}
-    .output{white-space:pre-wrap;background:#f7f7f8;padding:12px;border-radius:8px;border:1px dashed #ddd}
-    footer{margin-top:18px;color:#666;font-size:13px}
+    .layout{display:grid;grid-template-columns:320px 1fr;gap:16px}
+    .panel{border:1px solid #e6e6e6;padding:12px;border-radius:8px;background:#fff}
+    .notes-list{display:flex;flex-direction:column;gap:8px;max-height:62vh;overflow:auto}
+    .note-item{padding:8px;border-radius:6px;border:1px solid transparent;cursor:pointer}
+    .note-item:hover{background:#f6f6f8}
+    .note-item.active{border-color:#d0d7ff;background:#f0f4ff}
+    input[type=text]{width:100%;padding:8px;border-radius:6px;border:1px solid #ddd}
+    textarea{width:100%;height:52vh;padding:10px;border-radius:8px;border:1px solid #ddd;resize:vertical;font-size:15px}
+    .meta{font-size:13px;color:#666;margin-top:6px}
+    .small{font-size:13px;padding:6px 8px}
+    .footer{margin-top:12px;color:#666;font-size:13px}
   </style>
 </head>
 <body>
-  <h1>Hagakure — Beğendiklerim (GitHub-ready)</h1>
-  <p class="lead">Bu tek dosyalık şablon, elindeki "beğendiğin" pasaj fotoğraflarını ve alt yazılarını düzenleyip GitHub README.md için Markdown üretebilir. Resimleri repo içindeki <code>images/</code> klasörüne koymanı öneririm.</p>
+  <header>
+    <h1>Basit Not Defteri — Kalıcı (LocalStorage)</h1>
+    <div style="margin-left:auto;color:#666;font-size:13px">Notlar tarayıcıda saklanır — başka cihazla senkronize olmaz</div>
+  </header>
 
   <div class="controls">
-    <label>
-      Resim (local olarak önizlemek için):
-      <input id="file" type="file" accept="image/*" />
-    </label>
-    <label style="flex:1">
-      Altyazı / Pasaj (Sen yazacaksın):
-      <textarea id="caption" placeholder="Buraya beğendiğin pasajı yaz... (kısa başlık + uzun açıklama olabilir)"></textarea>
-    </label>
-    <div style="display:flex;flex-direction:column;gap:8px;align-self:flex-start">
-      <button id="add">Ekle</button>
-      <button id="gen">Markdown Üret</button>
-      <button id="export">JSON İndir</button>
-    </div>
+    <button id="newBtn">Yeni Not (N)</button>
+    <button id="exportBtn">Yedekle (JSON indir)</button>
+    <button id="importBtn">Yükle (JSON seç)</button>
+    <button id="clearBtn">Tümünü Sil</button>
+    <input id="search" type="text" placeholder="Ara... (başlık/icerik)" style="margin-left:auto;min-width:180px" />
   </div>
 
-  <div id="entries" class="entries"></div>
+  <div class="layout">
+    <aside class="panel">
+      <div style="display:flex;gap:8px;margin-bottom:10px">
+        <input id="titleFilter" type="text" placeholder="Başlık filtre" />
+        <select id="sort">
+          <option value="updated">En yeni güncellenen</option>
+          <option value="created">En yeni oluşturulan</option>
+        </select>
+      </div>
+      <div id="notes" class="notes-list">Yükleniyor...</div>
+    </aside>
 
-  <h3>Oluşan Markdown (README.md içine yapıştır)</h3>
-  <div id="mdout" class="output">Henüz içerik yok.</div>
+    <main class="panel">
+      <input id="title" type="text" placeholder="Not başlığı (opsiyonel)" />
+      <div class="meta">Otomatik kaydediliyor — değişiklikler yerel olarak saklanır</div>
+      <textarea id="body" placeholder="Buraya yaz... (Ctrl/Cmd+S ile manuel kaydet, Ctrl/Cmd+Enter yeni not)"></textarea>
 
-  <footer>
-    Kullanım:
-    <ol>
-      <li>Repo köküne <code>images/</code> klasörü ekle ve resimlerini buraya yükle (ör. <code>images/p1.jpg</code>).</li>
-      <li>Bu sayfada "Resim" seçip, aynı dosya adını (veya yükleyince göreceğin base64) kullanarak kayıt ekle. En temiz yol: resimleri GitHub'a yükleyip referansla Markdown üretmek.</li>
-      <li>"Markdown Üret" tıklayın, çıkan Markdown'u README.md'ye yapıştır ve commit/push yap.</li>
-    </ol>
-    Git komutları örneği:
-    <pre>git add README.md images/*
-git commit -m "Hagakure: beğendiğim pasajlar ekleme"
-git push</pre>
-  </footer>
+      <div style="display:flex;gap:8px;margin-top:8px">
+        <button id="saveBtn">Kaydet (S)</button>
+        <button id="deleteBtn" style="background:#fff6f6;border-color:#f2c6c6">Sil</button>
+        <button id="renameBtn">Başlığı Kaydet</button>
+        <div style="margin-left:auto" class="small">Toplam not: <span id="count">0</span></div>
+      </div>
+
+      <div class="footer">İpuçları: <strong>Yeni Not</strong> için N tuşu, <strong>Kaydet</strong> için S tuşu, <strong>Çıkmadan önce yedekle</strong> butonunu kullan.</div>
+    </main>
+  </div>
+
+  <input type="file" id="fileIn" accept="application/json" style="display:none" />
 
   <script>
-    // Basit client-side uygulama: sayfada çalışır, base64 veya image path'le entry tutar.
-    const fileIn = document.getElementById('file');
-    const captionIn = document.getElementById('caption');
-    const addBtn = document.getElementById('add');
-    const entriesDiv = document.getElementById('entries');
-    const mdOut = document.getElementById('mdout');
-    const genBtn = document.getElementById('gen');
-    const exportBtn = document.getElementById('export');
+    // Basit, güvenilir not defteri - LocalStorage tabanlı
+    const LS_KEY = 'simple_notepad_v1';
+    const notesEl = document.getElementById('notes');
+    const titleEl = document.getElementById('title');
+    const bodyEl = document.getElementById('body');
+    const newBtn = document.getElementById('newBtn');
+    const saveBtn = document.getElementById('saveBtn');
+    const deleteBtn = document.getElementById('deleteBtn');
+    const exportBtn = document.getElementById('exportBtn');
+    const importBtn = document.getElementById('importBtn');
+    const fileIn = document.getElementById('fileIn');
+    const countEl = document.getElementById('count');
+    const searchEl = document.getElementById('search');
+    const titleFilter = document.getElementById('titleFilter');
+    const sortEl = document.getElementById('sort');
+    const renameBtn = document.getElementById('renameBtn');
 
-    let entries = [];
+    let notes = []; // {id,title,body,created,updated}
+    let activeId = null;
+    let autosaveTimer = null;
 
-    function render() {
-      entriesDiv.innerHTML = '';
-      if(entries.length===0) entriesDiv.innerHTML = '<p>Henüz bir pasaj eklenmedi.</p>';
-      entries.forEach((e, i) => {
-        const card = document.createElement('div'); card.className='card';
-        const img = document.createElement('img'); img.src = e.preview; card.appendChild(img);
-        const cap = document.createElement('div'); cap.className='caption'; cap.textContent = e.text; card.appendChild(cap);
-        const actions = document.createElement('div'); actions.className='actions';
-        const del = document.createElement('button'); del.textContent='Sil'; del.onclick = ()=>{entries.splice(i,1); render();}; actions.appendChild(del);
-        const edit = document.createElement('button'); edit.textContent='Düzenle'; edit.onclick = ()=>{captionIn.value=e.text; mdOut.scrollIntoView();}; actions.appendChild(edit);
-        card.appendChild(actions);
-        entriesDiv.appendChild(card);
-      });
-      mdOut.textContent = entries.length ? 'Hazır. "Markdown Üret" butonuna bas.' : 'Henüz içerik yok.';
+    function uid(){return Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,8)}
+
+    function load(){
+      try{
+        const raw = localStorage.getItem(LS_KEY);
+        notes = raw ? JSON.parse(raw) : [];
+      }catch(e){notes=[]}
+      if(!Array.isArray(notes)) notes = [];
+      renderList();
     }
 
-    function toMarkdown() {
-      if(entries.length===0) return 'Henüz içerik yok.';
-      let md = '# Hagakure — Beğendiklerim\n\n';
-      entries.forEach((e, idx)=>{
-        // Eğer e.path varsa, kullan; yoksa sayfada görünen base64'ü kullan (not: github base64 doğrudan README desteklemez; repo içine yüklemek en iyisi)
-        if(e.path) {
-          md += `## ${escapeMarkdownTitle(e.title||('Pasaj ' + (idx+1)))}\n\n`;
-          md += `![${escapeAlt(e.title||'Hagakure pasajı ' + (idx+1))}](${e.path})\n\n`;
-          md += `${e.text}\n\n`;
-        } else {
-          md += `## ${escapeMarkdownTitle(e.title||('Pasaj ' + (idx+1)))}\n\n`;
-          md += `> _(Resim yerel olarak eklendi — GitHub'a yükle ve path gir.)_\n\n`;
-          md += `${e.text}\n\n`;
-        }
-      });
-      md += '---\n*Sayfa otomatik üretilmiştir.*';
-      return md;
+    function persist(){
+      localStorage.setItem(LS_KEY, JSON.stringify(notes));
+      updateCount();
     }
 
-    function escapeAlt(t){ return t.replace(/\n/g,' ').replace(/\|/g,''); }
-    function escapeMarkdownTitle(t){ return t.replace(/^#+/,'').trim(); }
+    function updateCount(){ countEl.textContent = notes.length; }
 
-    fileIn.addEventListener('change', ()=>{
-      const f = fileIn.files[0];
-      if(!f) return;
-      const reader = new FileReader();
-      reader.onload = ()=>{
-        // preview için base64
-        fileIn._preview = reader.result;
-      }
-      reader.readAsDataURL(f);
+    function renderList(){
+      // filter/search
+      const q = (searchEl.value||'').toLowerCase();
+      const titleQ = (titleFilter.value||'').toLowerCase();
+      let arr = notes.slice();
+      const sortBy = sortEl.value;
+      arr.sort((a,b)=> sortBy==='created' ? b.created - a.created : b.updated - a.updated);
+      arr = arr.filter(n=>{
+        if(q && !( (n.title||'').toLowerCase().includes(q) || (n.body||'').toLowerCase().includes(q) )) return false;
+        if(titleQ && !( (n.title||'').toLowerCase().includes(titleQ) )) return false;
+        return true;
+      });
+
+      notesEl.innerHTML = '';
+      if(arr.length===0){ notesEl.innerHTML = '<div style="color:#666">Not bulunamadı.</div>'; return; }
+      arr.forEach(n=>{
+        const d=document.createElement('div'); d.className='note-item';
+        if(n.id===activeId) d.classList.add('active');
+        d.innerHTML = `<strong>${escapeHtml(n.title||'— Başlıksız —')}</strong><div style="font-size:12px;color:#666;margin-top:6px">Güncellendi: ${new Date(n.updated).toLocaleString()}</div>`;
+        d.onclick = ()=>{ openNote(n.id); };
+        notesEl.appendChild(d);
+      });
+    }
+
+    function escapeHtml(s){return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+    function openNote(id){
+      const n = notes.find(x=>x.id===id); if(!n) return;
+      activeId = id; titleEl.value = n.title||''; bodyEl.value = n.body||''; renderList();
+    }
+
+    function newNote(){
+      const n = {id: uid(), title:'', body:'', created:Date.now(), updated:Date.now()};
+      notes.unshift(n); activeId = n.id; persist(); renderList(); openNote(n.id);
+    }
+
+    function saveActive(){
+      if(!activeId) { alert('Önce yeni not oluştur veya bir not aç.'); return; }
+      const n = notes.find(x=>x.id===activeId);
+      if(!n) return;
+      n.title = titleEl.value.trim();
+      n.body = bodyEl.value;
+      n.updated = Date.now();
+      // move to top
+      notes = notes.filter(x=>x.id!==n.id); notes.unshift(n);
+      persist(); renderList();
+    }
+
+    function deleteActive(){
+      if(!activeId){ alert('Silinecek not yok.'); return; }
+      if(!confirm('Bu notu silmek istediğine emin misin?')) return;
+      notes = notes.filter(x=>x.id!==activeId); activeId = null; persist(); renderList(); titleEl.value=''; bodyEl.value='';
+    }
+
+    function autoSave(){
+      if(autosaveTimer) clearTimeout(autosaveTimer);
+      autosaveTimer = setTimeout(()=>{ if(activeId){ saveActive(); } }, 700);
+    }
+
+    function exportJSON(){
+      const blob = new Blob([JSON.stringify(notes, null, 2)], {type:'application/json'});
+      const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href=url; a.download = 'notlar-yedek.json'; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+    }
+
+    function importJSON(file){
+      const reader = new FileReader(); reader.onload = ()=>{
+        try{ const data = JSON.parse(reader.result); if(!Array.isArray(data)) throw 0; notes = data; persist(); renderList(); alert('Yüklendi.'); }catch(e){ alert('JSON yüklenemedi - biçim hatası.'); }
+      };
+      reader.readAsText(file);
+    }
+
+    // keyboard shortcuts
+    document.addEventListener('keydown',(e)=>{
+      if(e.key.toLowerCase()==='n' && !e.ctrlKey && !e.metaKey){ e.preventDefault(); newNote(); }
+      if((e.ctrlKey||e.metaKey) && e.key.toLowerCase()==='s'){ e.preventDefault(); saveActive(); alert('Kaydedildi.'); }
+      if((e.ctrlKey||e.metaKey) && e.key==='Enter'){ e.preventDefault(); newNote(); }
+      if(e.key.toLowerCase()==='s' && !e.ctrlKey && !e.metaKey){ /* plain S for save as well */ saveActive(); }
     });
 
-    addBtn.addEventListener('click', ()=>{
-      const preview = fileIn._preview || '';
-      const caption = captionIn.value.trim();
-      const pathPrompt = prompt('Resmini GitHub repo\'na yüklediysen dosya yolu gir (ör: images/p1.jpg). Boş bırakırsan sayfada base64 preview kullanılır.');
-      if(!caption){ alert('Lütfen pasajını yaz.'); return; }
-      entries.push({preview, text: caption, path: pathPrompt||''});
-      captionIn.value=''; fileIn.value=''; fileIn._preview=''; render();
-    });
+    // events
+    newBtn.onclick = newNote; saveBtn.onclick = ()=>{ saveActive(); alert('Kaydedildi.'); };
+    deleteBtn.onclick = deleteActive; exportBtn.onclick = exportJSON; importBtn.onclick = ()=>fileIn.click();
+    fileIn.onchange = ()=>{ if(fileIn.files[0]) importJSON(fileIn.files[0]); fileIn.value=''; };
+    titleEl.addEventListener('input', autoSave); bodyEl.addEventListener('input', autoSave);
+    searchEl.addEventListener('input', renderList); titleFilter.addEventListener('input', renderList); sortEl.addEventListener('change', renderList);
 
-    genBtn.addEventListener('click', ()=>{
-      mdOut.textContent = toMarkdown();
-    });
+    // storage sync across tabs
+    window.addEventListener('storage', (ev)=>{ if(ev.key===LS_KEY) load(); });
 
-    exportBtn.addEventListener('click', ()=>{
-      const blob = new Blob([JSON.stringify(entries, null, 2)], {type:'application/json'});
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a'); a.href=url; a.download = 'hagakure_entries.json'; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
-    });
-
-    render();
+    // init
+    load();
+    // if no notes, create one automatically
+    if(notes.length===0) newNote();
   </script>
 </body>
 </html>
