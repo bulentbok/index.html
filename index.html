@@ -1,102 +1,147 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="tr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ANAİS TÜRKMEN</title>
-<style>
-  /* Genel stil */
-  body {
-    font-family: 'Arial', sans-serif;
-    margin: 0;
-    padding: 0;
-    background: #f0f2f5;
-    color: #333;
-  }
-  header {
-    background: #FFC0CB;
-    color: white;
-    padding: 50px 20px;
-    text-align: center;
-  }
-  header h1 {
-    margin: 0;
-    font-size: 3em;
-  }
-  nav {
-    background: #FFB6C1;
-    display: flex;
-    justify-content: center;
-  }
-  nav a {
-    color: white;
-    padding: 15px 20px;
-    text-decoration: none;
-    display: block;
-  }
-  nav a:hover {
-    background: #FFB6C1;
-  }
-  main {
-    padding: 40px 20px;
-    max-width: 800px;
-    margin: auto;
-  }
-  section {
-    margin-bottom: 50px;
-  }
-  h2 {
-    color: #4CAF50;
-  }
-  footer {
-    background: #333;
-    color: white;
-    text-align: center;
-    padding: 20px;
-  }
-
-  /* Responsive */
-  @media(max-width:600px){
-    header h1 { font-size: 2em; }
-    nav { flex-direction: column; }
-  }
-</style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Hagakure — Beğendiklerim</title>
+  <style>
+    :root{font-family:Inter,system-ui,Segoe UI,Roboto,"Helvetica Neue",Arial;margin:0}
+    body{max-width:980px;margin:30px auto;padding:20px;line-height:1.45;color:#111}
+    h1{font-size:28px;margin-bottom:6px}
+    p.lead{color:#444;margin-top:0}
+    .controls{display:flex;gap:8px;flex-wrap:wrap;margin:18px 0}
+    input[type=file]{display:block}
+    .entries{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:18px}
+    .card{border:1px solid #e6e6e6;padding:12px;border-radius:8px;background:#fff;box-shadow:0 2px 6px rgba(0,0,0,0.03)}
+    .card img{width:100%;height:200px;object-fit:cover;border-radius:6px}
+    .caption{margin-top:8px;white-space:pre-wrap}
+    .actions{display:flex;gap:8px;margin-top:10px}
+    button{padding:8px 10px;border-radius:6px;border:1px solid #ccc;background:#fafafa;cursor:pointer}
+    textarea{width:100%;min-height:110px;padding:8px;border-radius:6px;border:1px solid #ddd}
+    .output{white-space:pre-wrap;background:#f7f7f8;padding:12px;border-radius:8px;border:1px dashed #ddd}
+    footer{margin-top:18px;color:#666;font-size:13px}
+  </style>
 </head>
 <body>
+  <h1>Hagakure — Beğendiklerim (GitHub-ready)</h1>
+  <p class="lead">Bu tek dosyalık şablon, elindeki "beğendiğin" pasaj fotoğraflarını ve alt yazılarını düzenleyip GitHub README.md için Markdown üretebilir. Resimleri repo içindeki <code>images/</code> klasörüne koymanı öneririm.</p>
 
-<header>
-  <h1>ANAİS TÜRKMEN</h1>
-  <p>ANAİSGÜL</p>
-</header>
+  <div class="controls">
+    <label>
+      Resim (local olarak önizlemek için):
+      <input id="file" type="file" accept="image/*" />
+    </label>
+    <label style="flex:1">
+      Altyazı / Pasaj (Sen yazacaksın):
+      <textarea id="caption" placeholder="Buraya beğendiğin pasajı yaz... (kısa başlık + uzun açıklama olabilir)"></textarea>
+    </label>
+    <div style="display:flex;flex-direction:column;gap:8px;align-self:flex-start">
+      <button id="add">Ekle</button>
+      <button id="gen">Markdown Üret</button>
+      <button id="export">JSON İndir</button>
+    </div>
+  </div>
 
-<nav>
-  <a href="#hakkimda">Hakkımda</a>
-  <a href="#projeler">Projeler</a>
-  <a href="#iletisim">İletişim</a>
-</nav>
+  <div id="entries" class="entries"></div>
 
-<main>
-  <section id="hakkimda">
-    <img src="A.JPG" alt="A.JPG" width="1000">
-    <h2>Hakkımda</h2>
-    <img src="gi.JPG" alt="gi.JPG" width="1000">
-    <p>Buraya kendini tanıtan kısa bir yazı ekleyebilirsin. Örneğin hobilerin, yaptığın işler veya ilgilendiğin konular.</p>
-  </section>
+  <h3>Oluşan Markdown (README.md içine yapıştır)</h3>
+  <div id="mdout" class="output">Henüz içerik yok.</div>
 
-  <section id="projeler">
-    <h2>Projeler</h2>
-    <p>Buraya projelerini veya çalışmalarını gösterebilirsin. Resim, link veya açıklamalar ekleyebilirsin.</p>
-  </section>
+  <footer>
+    Kullanım:
+    <ol>
+      <li>Repo köküne <code>images/</code> klasörü ekle ve resimlerini buraya yükle (ör. <code>images/p1.jpg</code>).</li>
+      <li>Bu sayfada "Resim" seçip, aynı dosya adını (veya yükleyince göreceğin base64) kullanarak kayıt ekle. En temiz yol: resimleri GitHub'a yükleyip referansla Markdown üretmek.</li>
+      <li>"Markdown Üret" tıklayın, çıkan Markdown'u README.md'ye yapıştır ve commit/push yap.</li>
+    </ol>
+    Git komutları örneği:
+    <pre>git add README.md images/*
+git commit -m "Hagakure: beğendiğim pasajlar ekleme"
+git push</pre>
+  </footer>
 
-  <section id="iletisim">
-    <h2>İletişim</h2>
-    <p>Buraya e-posta, sosyal medya veya iletişim bilgilerini ekleyebilirsin.</p>
-  </section>
-</main>
+  <script>
+    // Basit client-side uygulama: sayfada çalışır, base64 veya image path'le entry tutar.
+    const fileIn = document.getElementById('file');
+    const captionIn = document.getElementById('caption');
+    const addBtn = document.getElementById('add');
+    const entriesDiv = document.getElementById('entries');
+    const mdOut = document.getElementById('mdout');
+    const genBtn = document.getElementById('gen');
+    const exportBtn = document.getElementById('export');
 
-<footer>
-  &copy; 2025 Benim Modern Sitem
-</footer>
+    let entries = [];
 
+    function render() {
+      entriesDiv.innerHTML = '';
+      if(entries.length===0) entriesDiv.innerHTML = '<p>Henüz bir pasaj eklenmedi.</p>';
+      entries.forEach((e, i) => {
+        const card = document.createElement('div'); card.className='card';
+        const img = document.createElement('img'); img.src = e.preview; card.appendChild(img);
+        const cap = document.createElement('div'); cap.className='caption'; cap.textContent = e.text; card.appendChild(cap);
+        const actions = document.createElement('div'); actions.className='actions';
+        const del = document.createElement('button'); del.textContent='Sil'; del.onclick = ()=>{entries.splice(i,1); render();}; actions.appendChild(del);
+        const edit = document.createElement('button'); edit.textContent='Düzenle'; edit.onclick = ()=>{captionIn.value=e.text; mdOut.scrollIntoView();}; actions.appendChild(edit);
+        card.appendChild(actions);
+        entriesDiv.appendChild(card);
+      });
+      mdOut.textContent = entries.length ? 'Hazır. "Markdown Üret" butonuna bas.' : 'Henüz içerik yok.';
+    }
+
+    function toMarkdown() {
+      if(entries.length===0) return 'Henüz içerik yok.';
+      let md = '# Hagakure — Beğendiklerim\n\n';
+      entries.forEach((e, idx)=>{
+        // Eğer e.path varsa, kullan; yoksa sayfada görünen base64'ü kullan (not: github base64 doğrudan README desteklemez; repo içine yüklemek en iyisi)
+        if(e.path) {
+          md += `## ${escapeMarkdownTitle(e.title||('Pasaj ' + (idx+1)))}\n\n`;
+          md += `![${escapeAlt(e.title||'Hagakure pasajı ' + (idx+1))}](${e.path})\n\n`;
+          md += `${e.text}\n\n`;
+        } else {
+          md += `## ${escapeMarkdownTitle(e.title||('Pasaj ' + (idx+1)))}\n\n`;
+          md += `> _(Resim yerel olarak eklendi — GitHub'a yükle ve path gir.)_\n\n`;
+          md += `${e.text}\n\n`;
+        }
+      });
+      md += '---\n*Sayfa otomatik üretilmiştir.*';
+      return md;
+    }
+
+    function escapeAlt(t){ return t.replace(/\n/g,' ').replace(/\|/g,''); }
+    function escapeMarkdownTitle(t){ return t.replace(/^#+/,'').trim(); }
+
+    fileIn.addEventListener('change', ()=>{
+      const f = fileIn.files[0];
+      if(!f) return;
+      const reader = new FileReader();
+      reader.onload = ()=>{
+        // preview için base64
+        fileIn._preview = reader.result;
+      }
+      reader.readAsDataURL(f);
+    });
+
+    addBtn.addEventListener('click', ()=>{
+      const preview = fileIn._preview || '';
+      const caption = captionIn.value.trim();
+      const pathPrompt = prompt('Resmini GitHub repo\'na yüklediysen dosya yolu gir (ör: images/p1.jpg). Boş bırakırsan sayfada base64 preview kullanılır.');
+      if(!caption){ alert('Lütfen pasajını yaz.'); return; }
+      entries.push({preview, text: caption, path: pathPrompt||''});
+      captionIn.value=''; fileIn.value=''; fileIn._preview=''; render();
+    });
+
+    genBtn.addEventListener('click', ()=>{
+      mdOut.textContent = toMarkdown();
+    });
+
+    exportBtn.addEventListener('click', ()=>{
+      const blob = new Blob([JSON.stringify(entries, null, 2)], {type:'application/json'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a'); a.href=url; a.download = 'hagakure_entries.json'; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+    });
+
+    render();
+  </script>
 </body>
 </html>
+
